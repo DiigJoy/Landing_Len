@@ -1,9 +1,9 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: DiigJoy/Landing_Len
   branch: main # Rama a la que se realizarán los commits
-
-# Habilitar la vista previa en vivo en el entorno de desarrollo
-local_backend: true
+  base_url: https://api.netlify.com
+  auth_endpoint: oauth
 
 # Carpeta donde se guardarán los archivos multimedia subidos
 media_folder: "public/images/uploads"
