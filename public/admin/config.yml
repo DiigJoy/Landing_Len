@@ -1,7 +1,7 @@
 backend:
   name: github
-  repo: https://github.com/DiigJoy/Landing_Len
-  branch: main # Rama a la que se realizarán los commits
+  repo: DiigJoy/Landing_Len
+  branch: main
   base_url: https://api.netlify.com
   auth_endpoint: oauth
 
