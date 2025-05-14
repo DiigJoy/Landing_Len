@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "Node",
     "strict": true,
     "jsx": "preserve",
     "sourceMap": true,
@@ -10,9 +10,7 @@
     "esModuleInterop": true,
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
-    "types": ["node", "vite/client"],
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
+    "types": ["node"],
     "noEmit": true
   },
   "include": ["src/**/*", "env.d.ts", "vite.config.ts"]
