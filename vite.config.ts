@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import { fileURLToPath } from 'url'
 
 // https://vitejs.dev/config/
+// Configuración optimizada para Node.js 22
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
 export default defineConfig({
   plugins: [vue()],
   resolve: {
