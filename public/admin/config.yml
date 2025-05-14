@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: DiigJoy/Landing_Len
+  repo: /DiigJoy/Landing_Len
   branch: main
   base_url: https://api.netlify.com
   auth_endpoint: oauth
