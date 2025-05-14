@@ -1,0 +1,51 @@
+backend:
+  name: git-gateway
+  branch: main # Rama a la que se realizarán los commits
+
+# Habilitar la vista previa en vivo en el entorno de desarrollo
+local_backend: true
+
+# Carpeta donde se guardarán los archivos multimedia subidos
+media_folder: "public/images/uploads"
+public_folder: "/images/uploads"
+
+# Configuración de las colecciones
+collections:
+  - name: "blog" # Nombre de la colección
+    label: "Blog" # Etiqueta que se mostrará en la UI
+    folder: "content/blog" # Carpeta donde se almacenarán los archivos
+    create: true # Permitir a los usuarios crear nuevas entradas
+    slug: "{{slug}}" # Patrón de slug para las entradas
+    fields: # Campos que se mostrarán en la UI
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Slug", name: "slug", widget: "string", pattern: ['^[a-z0-9]+(?:-[a-z0-9]+)*$', "Solo letras minúsculas, números y guiones"] }
+      - { label: "Fecha de publicación", name: "publishDate", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "Imagen de portada", name: "coverImage", widget: "image" }
+      - { label: "Categoría", name: "category", widget: "select", options: ["Productividad", "Marketing", "Negocios", "Diseño", "Finanzas", "Tecnología", "Liderazgo", "Bienestar"] }
+      - { label: "Extracto", name: "excerpt", widget: "text" }
+      - { label: "Contenido", name: "content", widget: "markdown" }
+      - { label: "Etiquetas", name: "tags", widget: "list", required: false }
+      - { label: "Publicado", name: "published", widget: "boolean", default: true }
+
+  - name: "pages" # Nombre de la colección
+    label: "Páginas" # Etiqueta que se mostrará en la UI
+    folder: "content/pages" # Carpeta donde se almacenarán los archivos
+    create: true # Permitir a los usuarios crear nuevas entradas
+    slug: "{{slug}}" # Patrón de slug para las entradas
+    fields: # Campos que se mostrarán en la UI
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Slug", name: "slug", widget: "string", pattern: ['^[a-z0-9]+(?:-[a-z0-9]+)*$', "Solo letras minúsculas, números y guiones"] }
+      - { label: "Contenido", name: "content", widget: "markdown" }
+      - { label: "Publicado", name: "published", widget: "boolean", default: true }
+
+  - name: "resources" # Nombre de la colección para los recursos descargables
+    label: "Recursos Descargables" # Etiqueta que se mostrará en la UI
+    folder: "content/resources" # Carpeta donde se almacenarán los archivos
+    create: true # Permitir a los usuarios crear nuevas entradas
+    slug: "{{slug}}" # Patrón de slug para las entradas
+    fields: # Campos que se mostrarán en la UI
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Descripción", name: "description", widget: "text" }
+      - { label: "Archivo PDF", name: "pdfFile", widget: "file" }
+      - { label: "Imagen de portada", name: "coverImage", widget: "image", required: false }
+      - { label: "Publicado", name: "published", widget: "boolean", default: true }
