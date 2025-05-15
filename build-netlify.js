@@ -1,5 +1,5 @@
-const fs = require('fs-extra');
-const path = require('path');
+import fs from 'fs-extra';
+import path from 'path';
 
 // Asegurarse de que la carpeta admin esté disponible en dist
 fs.copySync(
