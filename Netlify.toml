@@ -7,13 +7,19 @@
 [build.environment]
   NODE_VERSION = "18.19.0"
 
+# Redirección específica para admin (antes de la redirección genérica)
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/index.html"
+  status = 200
+
 # Redirecciones y reescrituras para SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Cabeceras para mejorar seguridad y rendimiento
+# Cabeceras para mejorar seguridad y rendimiento, pero permisivas para CMS
 [[headers]]
   for = "/*"
   [headers.values]
@@ -21,10 +27,4 @@
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "no-referrer-when-downgrade"
     X-Content-Type-Options = "nosniff"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://identity.netlify.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://unpkg.com; connect-src 'self' https://api.netlify.com;"
-
-# Configuración de formularios
-[build.processing.forms]
-  # Asegúrate de que los formularios se procesen correctamente
-  [build.processing.forms.netlify_forms]
-    enabled = true
+    Content-Security-Policy = "default-src 'self' https://unpkg.com https://identity.netlify.com; script-src 'self' 'unsafe-inline' https://unpkg.com https://identity.netlify.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://unpkg.com; connect-src 'self' https://api.netlify.com https://github.com;"

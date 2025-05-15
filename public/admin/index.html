@@ -4,23 +4,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel de Administración</title>
-    <!-- Incluir el CSS de Netlify Identity Widget -->
-    <link href="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.css" rel="stylesheet" />
-    <!-- Incluir Netlify Identity Widget -->
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
   <body>
-    <!-- Incluir el script del CMS -->
     <script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
     <script>
-      // Si el usuario es redirigido después de iniciar sesión, redirigirlo a la página de administración
+      // Configuración adicional para debugging
       if (window.netlifyIdentity) {
         window.netlifyIdentity.on("init", user => {
-          if (!user) {
-            window.netlifyIdentity.on("login", () => {
-              document.location.href = "/admin/";
-            });
-          }
+          console.log("Identity initialized", user);
+        });
+        window.netlifyIdentity.on("login", user => {
+          console.log("User logged in:", user);
+          document.location.href = "/admin/";
+        });
+        window.netlifyIdentity.on("error", err => {
+          console.error("Identity error:", err);
         });
       }
     </script>

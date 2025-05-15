@@ -1,22 +1,8 @@
-// Script para copiar archivos necesarios para Netlify después del build
-import fs from 'fs-extra';
-import path from 'path';
+const fs = require('fs-extra');
+const path = require('path');
 
-// Función para copiar archivos y directorios
-async function copyFiles() {
-  try {
-    // Copiar admin/index.html a dist/admin/index.html
-    await fs.copy(
-      path.resolve('public/admin'),
-      path.resolve('dist/admin')
-    );
-    
-    console.log('✅ Archivos copiados correctamente para Netlify');
-  } catch (err) {
-    console.error('❌ Error al copiar archivos:', err);
-    process.exit(1);
-  }
-}
-
-// Ejecutar la función
-copyFiles();
+// Asegurarse de que la carpeta admin esté disponible en dist
+fs.copySync(
+  path.resolve(__dirname, 'public/admin'),
+  path.resolve(__dirname, 'dist/admin')
+);
