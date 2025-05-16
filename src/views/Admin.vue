@@ -55,6 +55,7 @@
 
       <!-- Admin Content -->
       <div class="container-custom py-8">
+        <!-- Estadísticas -->
         <div class="mb-8">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Stats Card: Artículos -->
@@ -133,22 +134,228 @@
             </div>
           </div>
         </div>
+
+        <!-- Pestañas de navegación -->
+        <div class="mb-6 border-b border-gray-200">
+          <nav class="-mb-px flex space-x-8">
+            <button
+              @click="activeTab = 'posts'"
+              :class="[
+                activeTab === 'posts'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+              ]"
+            >
+              Blog
+            </button>
+            <button
+              @click="activeTab = 'forms'"
+              :class="[
+                activeTab === 'forms'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+              ]"
+            >
+              Formularios
+            </button>
+            <button
+              @click="activeTab = 'analytics'"
+              :class="[
+                activeTab === 'analytics'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+              ]"
+            >
+              Analíticas
+            </button>
+          </nav>
+        </div>
+
+        <!-- Contenido de las pestañas -->
+        <div>
+          <!-- Pestaña de Blog -->
+          <div v-if="activeTab === 'posts'" class="space-y-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Gestión del Blog</h2>
+              <button
+                @click="showBlogEditor = true"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Nuevo Post
+              </button>
+            </div>
+
+            <!-- Editor de Blog -->
+            <BlogEditor
+              v-if="showBlogEditor"
+              :post-to-edit="postToEdit"
+              @saved="handlePostSaved"
+              @cancelled="handleEditorClosed"
+            />
+
+            <!-- Lista de Posts -->
+            <div v-else class="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div v-if="isLoadingPosts" class="p-6 text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-2"></div>
+                <p class="text-gray-600">Cargando posts...</p>
+              </div>
+
+              <div v-else-if="posts.length === 0" class="p-6 text-center">
+                <p class="text-gray-600">No hay posts publicados aún.</p>
+              </div>
+
+              <table v-else class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="post in posts" :key="post.slug" class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-900">{{ post.title }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {{ post.category }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {{ formatDate(post.publishDate) }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        @click="editPost(post)"
+                        class="text-indigo-600 hover:text-indigo-900 mr-3"
+                      >
+                        Editar
+                      </button>
+                      <a
+                        :href="`/blog/${post.slug}`"
+                        target="_blank"
+                        class="text-blue-600 hover:text-blue-900"
+                      >
+                        Ver
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pestaña de Formularios -->
+          <div v-else-if="activeTab === 'forms'" class="space-y-6">
+            <h2 class="text-xl font-bold mb-4">Formularios de Contacto</h2>
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <p class="text-gray-600 mb-4">Aquí podrás ver los datos de los formularios enviados por los usuarios.</p>
+
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recurso</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="(submission, index) in formSubmissions" :key="index" class="hover:bg-gray-50">
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ submission.name }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ submission.email }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ submission.resource }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(submission.date) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pestaña de Analíticas -->
+          <div v-else-if="activeTab === 'analytics'" class="space-y-6">
+            <h2 class="text-xl font-bold mb-4">Analíticas del Sitio</h2>
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <p class="text-gray-600 mb-4">Aquí podrás ver las estadísticas de visitas a tu sitio web.</p>
+
+              <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Posts más visitados</h3>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vistas</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      <tr v-for="(post, index) in postAnalytics" :key="index" class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ post.title }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ post.views }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div>
+                <p class="text-sm text-gray-500">
+                  Para estadísticas más detalladas, consulta
+                  <a href="https://analytics.google.com" target="_blank" class="text-blue-600 hover:underline">Google Analytics</a>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onBeforeMount } from "vue";
+import { ref, reactive, onMounted, onBeforeMount, computed } from "vue";
 import { useRouter } from "vue-router";
 import { authService } from "../services/auth-service";
+import BlogEditor from "../components/BlogEditor.vue";
+import { createGitHubService } from "../services/githubService";
 
 const router = useRouter();
 const activeTab = ref<string>("posts");
-const isSubmitting = ref<boolean>(false);
 const user = ref<any>(null);
 const isLoading = ref<boolean>(true);
 const authError = ref<string>("");
+
+// Estado para la gestión del blog
+const showBlogEditor = ref<boolean>(false);
+const postToEdit = ref<any>(null);
+const posts = ref<any[]>([]);
+const isLoadingPosts = ref<boolean>(false);
+
+// Estado para formularios
+const formSubmissions = ref<any[]>([
+  { name: "Juan Pérez", email: "juan@example.com", resource: "Guía de Marketing", date: "2023-05-15" },
+  { name: "María García", email: "maria@example.com", resource: "Plantilla SEO", date: "2023-05-10" },
+  { name: "Carlos López", email: "carlos@example.com", resource: "Ebook Productividad", date: "2023-05-05" }
+]);
+
+// Estado para analíticas
+const postAnalytics = ref<any[]>([
+  { title: "5 Estrategias para Mejorar tu Productividad", views: 245 },
+  { title: "Guía Completa de Marketing Digital", views: 189 },
+  { title: "Cómo Crear un Plan de Negocios Efectivo", views: 132 }
+]);
 
 // Verificar autenticación antes de montar el componente
 onBeforeMount(async () => {
@@ -187,6 +394,9 @@ onMounted(async () => {
     if (!user.value) {
       console.warn("No se pudo obtener información del usuario");
     }
+
+    // Cargar posts
+    await loadPosts();
   } catch (error) {
     console.error("Error al cargar datos del usuario:", error);
     authError.value = "Error al cargar datos del usuario. Por favor, recarga la página.";
@@ -195,6 +405,87 @@ onMounted(async () => {
   }
 });
 
+// Cargar posts desde GitHub
+const loadPosts = async () => {
+  try {
+    isLoadingPosts.value = true;
+
+    // Verificar si las variables de entorno están configuradas
+    if (!import.meta.env.VITE_GITHUB_TOKEN ||
+        !import.meta.env.VITE_GITHUB_OWNER ||
+        !import.meta.env.VITE_GITHUB_REPO) {
+      console.warn('Variables de entorno de GitHub no configuradas');
+      // Usar datos de ejemplo para desarrollo
+      setTimeout(() => {
+        posts.value = [
+          {
+            title: "5 Estrategias para Mejorar tu Productividad",
+            slug: "5-estrategias-productividad",
+            excerpt: "Descubre cómo organizar mejor tu tiempo...",
+            publishDate: "2023-04-15",
+            category: "Productividad"
+          },
+          {
+            title: "Guía Completa de Marketing Digital",
+            slug: "guia-marketing-digital",
+            excerpt: "Todo lo que necesitas saber para promocionar tu negocio...",
+            publishDate: "2023-04-10",
+            category: "Marketing"
+          }
+        ];
+        isLoadingPosts.value = false;
+      }, 1000);
+      return;
+    }
+
+    // Cargar posts desde GitHub
+    const githubService = createGitHubService();
+    const allPosts = await githubService.getAllPosts();
+    posts.value = allPosts;
+  } catch (error) {
+    console.error('Error al cargar posts:', error);
+  } finally {
+    isLoadingPosts.value = false;
+  }
+};
+
+// Editar un post existente
+const editPost = (post: any) => {
+  postToEdit.value = post;
+  showBlogEditor.value = true;
+};
+
+// Manejar el guardado de un post
+const handlePostSaved = async (result: any) => {
+  showBlogEditor.value = false;
+  postToEdit.value = null;
+
+  // Recargar la lista de posts
+  await loadPosts();
+};
+
+// Manejar el cierre del editor
+const handleEditorClosed = () => {
+  showBlogEditor.value = false;
+  postToEdit.value = null;
+};
+
+// Formatear fecha
+const formatDate = (dateString: string) => {
+  if (!dateString) return '';
+
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch (e) {
+    return dateString;
+  }
+};
+
 // Definir tipos para datos
 interface Stats {
   posts: number;
@@ -202,13 +493,12 @@ interface Stats {
   downloads: number;
 }
 
-// Mock data
+// Estadísticas
 const stats = reactive<Stats>({
-  posts: 12,
-  contacts: 48,
+  posts: computed(() => posts.value.length),
+  contacts: computed(() => formSubmissions.value.length),
   downloads: 156,
 });
-
 
 // Función para iniciar sesión
 const login = async (): Promise<void> => {
