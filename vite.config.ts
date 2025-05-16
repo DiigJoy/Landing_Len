@@ -26,13 +26,10 @@ export default defineConfig({
   server: {
     port: 3000,
     host: '0.0.0.0', // Needed for Docker
-    // Para soporte de netlify-cms en desarrollo local
-    proxy: {
-      '/.netlify': {
-        target: 'http://localhost:8081', // Updated to match netlify-cms-proxy port
-        changeOrigin: true,
-        secure: false,
-      },
-    },
   },
+  // Importante: Asegurarse de que las variables de entorno estén disponibles
+  define: {
+    'import.meta.env.VITE_AUTH0_DOMAIN': JSON.stringify(process.env.VITE_AUTH0_DOMAIN),
+    'import.meta.env.VITE_AUTH0_CLIENT_ID': JSON.stringify(process.env.VITE_AUTH0_CLIENT_ID),
+  }
 })

@@ -33,15 +33,16 @@ export const getAllPosts = async (): Promise<BlogPost[]> => {
   try {
     // En un entorno real, esto haría una llamada a la API
     // Por ahora, simulamos una respuesta con datos de ejemplo
-    
+
     // Simular retraso de red
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // Aquí utilizaríamos fetch para obtener los posts desde una API
     // const response = await fetch('/api/posts');
     // const data = await response.json();
-    
-    // Datos de ejemplo para desarrollo
+
+    // IMPORTANTE: Estos son datos de ejemplo solo para desarrollo
+    // En producción, estos datos deberían venir de una API o CMS
     const posts: BlogPost[] = [
       {
         title: "5 Estrategias para Mejorar tu Productividad",
@@ -94,7 +95,7 @@ export const getAllPosts = async (): Promise<BlogPost[]> => {
         tags: ["finanzas personales", "presupuesto", "ahorro"]
       },
     ];
-    
+
     return posts;
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -109,22 +110,22 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
   try {
     // En un entorno real, esto haría una llamada a la API
     // Por ahora, simulamos una respuesta con datos de ejemplo
-    
+
     // Simular retraso de red
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // Aquí utilizaríamos fetch para obtener un post específico desde una API
     // const response = await fetch(`/api/posts/${slug}`);
     // const data = await response.json();
-    
+
     // Datos de ejemplo para desarrollo
     const posts = await getAllPosts();
     const post = posts.find(p => p.slug === slug);
-    
+
     if (!post) {
       return null;
     }
-    
+
     // Añadir contenido completo (en un entorno real, esto vendría de la API)
     const postWithContent = {
       ...post,
@@ -138,7 +139,7 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
                 </ul>
                 <p>Conclusión del artículo con recomendaciones finales.</p>`
     };
-    
+
     return postWithContent;
   } catch (error) {
     console.error(`Error fetching post ${slug}:`, error);
@@ -153,11 +154,12 @@ export const getResources = async (): Promise<Resource[]> => {
   try {
     // En un entorno real, esto haría una llamada a la API
     // Por ahora, simulamos una respuesta con datos de ejemplo
-    
+
     // Simular retraso de red
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Datos de ejemplo para desarrollo
+
+    // IMPORTANTE: Estos son datos de ejemplo solo para desarrollo
+    // En producción, estos datos deberían venir de una API o CMS
     const resources: Resource[] = [
       {
         title: "Guía de Productividad PDF",
@@ -167,7 +169,7 @@ export const getResources = async (): Promise<Resource[]> => {
         published: true
       }
     ];
-    
+
     return resources;
   } catch (error) {
     console.error('Error fetching resources:', error);
