@@ -1,4 +1,5 @@
 // Servicio para cargar posts y recursos
+import { createGitHubService } from './githubService';
 
 /**
  * Interfaz para un post del blog
@@ -31,15 +32,41 @@ export interface Resource {
  */
 export const getAllPosts = async (): Promise<BlogPost[]> => {
   try {
-    // En un entorno real, esto haría una llamada a la API
-    // Por ahora, simulamos una respuesta con datos de ejemplo
+    // Verificar si podemos usar GitHub API
+    if (import.meta.env.VITE_GITHUB_TOKEN &&
+        import.meta.env.VITE_GITHUB_OWNER &&
+        import.meta.env.VITE_GITHUB_REPO) {
+
+      console.log('Cargando posts desde GitHub API');
+
+      try {
+        const githubService = createGitHubService();
+        const posts = await githubService.getAllPosts();
+
+        if (posts && posts.length > 0) {
+          return posts.map(post => ({
+            title: post.title || '',
+            slug: post.slug || '',
+            publishDate: post.publishDate || new Date().toISOString().split('T')[0],
+            coverImage: post.coverImage || '/images/blog/default.jpg',
+            category: post.category || 'General',
+            excerpt: post.excerpt || '',
+            content: post.content || '',
+            tags: post.tags || [],
+            published: post.published !== false
+          }));
+        }
+      } catch (error) {
+        console.error('Error al cargar posts desde GitHub:', error);
+        // Si falla, caemos en los datos de ejemplo
+      }
+    }
+
+    // Si no hay credenciales de GitHub o falló la carga, usar datos de ejemplo
+    console.log('Usando datos de ejemplo para posts');
 
     // Simular retraso de red
     await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Aquí utilizaríamos fetch para obtener los posts desde una API
-    // const response = await fetch('/api/posts');
-    // const data = await response.json();
 
     // IMPORTANTE: Estos son datos de ejemplo solo para desarrollo
     // En producción, estos datos deberían venir de una API o CMS
@@ -108,15 +135,46 @@ export const getAllPosts = async (): Promise<BlogPost[]> => {
  */
 export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
   try {
-    // En un entorno real, esto haría una llamada a la API
-    // Por ahora, simulamos una respuesta con datos de ejemplo
+    // Verificar si podemos usar GitHub API
+    if (import.meta.env.VITE_GITHUB_TOKEN &&
+        import.meta.env.VITE_GITHUB_OWNER &&
+        import.meta.env.VITE_GITHUB_REPO) {
+
+      console.log(`Buscando post con slug ${slug} en GitHub`);
+
+      try {
+        // Intentar obtener todos los posts y filtrar por slug
+        const githubService = createGitHubService();
+        const posts = await githubService.getAllPosts();
+        const post = posts.find(p => p.slug === slug);
+
+        if (post) {
+          // Si el post ya tiene contenido, devolverlo directamente
+          if (post.content) {
+            return {
+              title: post.title || '',
+              slug: post.slug || '',
+              publishDate: post.publishDate || new Date().toISOString().split('T')[0],
+              coverImage: post.coverImage || '/images/blog/default.jpg',
+              category: post.category || 'General',
+              excerpt: post.excerpt || '',
+              content: post.content,
+              tags: post.tags || [],
+              published: post.published !== false
+            };
+          }
+        }
+      } catch (error) {
+        console.error(`Error al buscar post ${slug} en GitHub:`, error);
+        // Si falla, caemos en los datos de ejemplo
+      }
+    }
+
+    // Si no hay credenciales de GitHub o falló la carga, usar datos de ejemplo
+    console.log(`Usando datos de ejemplo para post ${slug}`);
 
     // Simular retraso de red
     await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Aquí utilizaríamos fetch para obtener un post específico desde una API
-    // const response = await fetch(`/api/posts/${slug}`);
-    // const data = await response.json();
 
     // Datos de ejemplo para desarrollo
     const posts = await getAllPosts();
@@ -129,7 +187,7 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
     // Añadir contenido completo (en un entorno real, esto vendría de la API)
     const postWithContent = {
       ...post,
-      content: `<p>Este es el contenido completo del artículo "${post.title}". En un entorno real, este contenido se cargaría desde el CMS o la API.</p>
+      content: post.content || `<p>Este es el contenido completo del artículo "${post.title}". En un entorno real, este contenido se cargaría desde el CMS o la API.</p>
                 <h2>Subtítulo del artículo</h2>
                 <p>Aquí va más contenido del artículo, con párrafos, listas, etc.</p>
                 <ul>

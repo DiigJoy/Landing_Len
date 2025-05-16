@@ -1,0 +1,5 @@
+Este es un archivo de ejemplo para simular un recurso descargable.
+
+En un entorno real, este sería un archivo PDF con contenido útil para tus usuarios.
+
+Para probar la funcionalidad de descarga, puedes usar este archivo como si fuera un recurso real.

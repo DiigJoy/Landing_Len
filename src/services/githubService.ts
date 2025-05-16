@@ -1,5 +1,30 @@
 import { Octokit } from '@octokit/rest';
 
+// Funciones para codificar/decodificar en base64 en el navegador
+function toBase64(str: string): string {
+  try {
+    // Usar btoa directamente para cadenas ASCII
+    return btoa(str);
+  } catch (e) {
+    // Para cadenas Unicode, necesitamos convertir a UTF-8 primero
+    const bytes = new TextEncoder().encode(str);
+    const binString = Array.from(bytes).map(byte => String.fromCharCode(byte)).join('');
+    return btoa(binString);
+  }
+}
+
+function fromBase64(str: string): string {
+  try {
+    // Usar atob directamente para cadenas ASCII
+    return atob(str);
+  } catch (e) {
+    // Para cadenas Unicode, necesitamos convertir desde UTF-8
+    const binString = atob(str);
+    const bytes = Uint8Array.from(binString, char => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+}
+
 // Tipos para los posts del blog
 export interface BlogPostInput {
   title: string;
@@ -70,7 +95,7 @@ ${post.content}`;
         repo: this.repo,
         path: filePath,
         message: `Add blog post: ${post.title}`,
-        content: Buffer.from(frontmatter).toString('base64'),
+        content: toBase64(frontmatter),
         branch: this.branch
       });
 
@@ -126,7 +151,7 @@ ${post.content}`;
         repo: this.repo,
         path: filePath,
         message: `Update blog post: ${post.title}`,
-        content: Buffer.from(frontmatter).toString('base64'),
+        content: toBase64(frontmatter),
         sha: fileData.data.sha,
         branch: this.branch
       });
@@ -180,7 +205,7 @@ ${post.content}`;
           }
 
           // Decodificar contenido
-          const fileContent = Buffer.from(content.data.content, 'base64').toString();
+          const fileContent = fromBase64(content.data.content);
 
           // Parsear frontmatter y contenido
           const frontmatterMatch = fileContent.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
