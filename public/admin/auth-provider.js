@@ -2,8 +2,8 @@ window.CMS_MANUAL_INIT = true;
 
 window.onload = () => {
   const auth = new netlifyCmsLibAuth.Auth0Auth({
-    domain: "publilen.auth0.com", // tu tenant
-    clientId: "TU_CLIENT_ID_DE_AUTH0", // de Auth0
+    domain: "dev-rku8lich5s07mw0k.us.auth0.com", // tu tenant
+    clientId: "HTrrSxd6v331amvSUVcGb4n2xetDGjxo", // de Auth0
     audience: "",
     scope: "openid profile email",
   });
