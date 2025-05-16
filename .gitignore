@@ -1,0 +1,78 @@
+# Dependencias
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Archivos de construcción
+/dist
+/build
+
+# Archivos de entorno local
+.env
+.env.local
+.env.*.local
+
+# Archivos de caché
+.cache
+.npm
+.eslintcache
+.stylelintcache
+
+# Archivos de registro
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Archivos del editor
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de Docker
+.docker
+docker-compose.override.yml
+
+# Archivos de prueba
+/coverage
+/.nyc_output
+/cypress/videos/
+/cypress/screenshots/
+
+# Archivos temporales
+.temp
+.tmp
+.history
+
+# Archivos generados por Vue
+.nuxt
+.nitro
+.output
+.vercel
+.netlify
+
+# Archivos específicos de TypeScript
+*.tsbuildinfo
