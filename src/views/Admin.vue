@@ -209,6 +209,7 @@ const stats = reactive<Stats>({
   downloads: 156,
 });
 
+
 // Función para iniciar sesión
 const login = async (): Promise<void> => {
   try {
