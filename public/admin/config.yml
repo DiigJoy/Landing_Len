@@ -2,11 +2,15 @@ backend:
   name: github
   repo: DiigJoy/Landing_Len
   branch: main
+  auth_type: implicit
+  app_id: Ov23li8OBlXwLHEpuCxV
 
+publish_mode: editorial_workflow
 # Carpeta donde se guardarán los archivos multimedia subidos
 media_folder: "public/images/uploads"
 public_folder: "/images/uploads"
 
+logo_url: /images/logo.png
 # Configuración de las colecciones
 collections:
   - name: "blog" # Nombre de la colección
