@@ -382,14 +382,11 @@ onBeforeMount(async () => {
 
 onMounted(async () => {
   console.log("Admin component mounted");
-  console.log("Verificando variables de Auth0:");
-  console.log("VITE_AUTH0_DOMAIN:", import.meta.env.VITE_AUTH0_DOMAIN);
-  console.log("VITE_AUTH0_CLIENT_ID:", import.meta.env.VITE_AUTH0_CLIENT_ID);
 
   try {
     // Obtener información del usuario
     user.value = await authService.getUser();
-    console.log("Usuario autenticado:", user.value);
+    // Usuario autenticado correctamente
 
     if (!user.value) {
       console.warn("No se pudo obtener información del usuario");

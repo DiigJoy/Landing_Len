@@ -47,10 +47,7 @@ export const authService = {
   // Inicializar Auth0
   async init(): Promise<void> {
     try {
-      console.log('Inicializando Auth0 con:');
-      console.log('Domain:', domain);
-      console.log('Client ID:', clientId);
-      console.log('Redirect URI:', redirectUri);
+      // Inicializando Auth0
 
       // Verificar si hay un código de autorización en la URL
       const urlParams = new URLSearchParams(window.location.search);
@@ -67,7 +64,7 @@ export const authService = {
       }
 
       if (code && state) {
-        console.log('Código de autorización detectado, procesando callback');
+        // Código de autorización detectado, procesando callback
 
         // Mostrar pantalla de carga durante el procesamiento del callback
         if (loadingStore) {
@@ -93,7 +90,7 @@ export const authService = {
 
         // Limpiar URL
         window.history.replaceState({}, document.title, window.location.pathname);
-        console.log('Autenticación completada correctamente');
+        // Autenticación completada correctamente
 
         // Ocultar pantalla de carga después de un breve retraso
         setTimeout(() => {
@@ -125,7 +122,7 @@ export const authService = {
 
   // Iniciar sesión
   async login(): Promise<void> {
-    console.log('Iniciando login con Auth0');
+    // Iniciando login con Auth0
     try {
       // Importar el store de carga dinámicamente para evitar dependencias circulares
       const { useLoadingStore } = await import('../stores/loadingStore');
@@ -146,7 +143,7 @@ export const authService = {
       authUrl.searchParams.append('scope', 'openid profile email');
       authUrl.searchParams.append('state', state);
 
-      console.log('URL de autenticación:', authUrl.toString());
+      // URL de autenticación generada
 
       // Pequeño retraso para asegurar que la pantalla de carga se muestre
       setTimeout(() => {
@@ -185,7 +182,7 @@ export const authService = {
         }
       }
 
-      console.log('¿Usuario autenticado?', isAuthenticated);
+      // Verificación de autenticación completada
       return isAuthenticated;
     } catch (error) {
       console.error('Error al verificar autenticación:', error);
@@ -199,7 +196,7 @@ export const authService = {
       const isAuth = await this.isAuthenticated();
 
       if (!isAuth) {
-        console.log('Usuario no autenticado, no se puede obtener perfil');
+        // Usuario no autenticado, no se puede obtener perfil
         return null;
       }
 
