@@ -203,7 +203,7 @@ export const authService = {
       // Simulamos un usuario
       return {
         name: 'Usuario de Prueba',
-        email: 'usuario@ejemplo.com'
+        email: 'jlbarriossouza@gmail.com'
       };
     } catch (error) {
       console.error('Error al obtener usuario:', error);
