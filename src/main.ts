@@ -6,21 +6,27 @@ import './assets/main.css';
 import { trackPageView } from './services/analyticsService';
 import { authService } from './services/auth-service';
 
-// Crear app
-const app = createApp(App);
 
-// Usar router
-app.use(router);
+async function bootstrap() {
+  // Inicializar Auth0
+  await authService.init();
 
-// Configurar seguimiento de navegación para Google Analytics
-router.afterEach((to) => {
-  // Registrar cambio de página en Google Analytics
-  trackPageView({
-    path: to.fullPath,
-    title: to.meta.title as string || to.name as string
+  // Crear app
+  const app = createApp(App);
+
+  // Usar router
+  app.use(router);
+
+  // Google Analytics
+  router.afterEach((to) => {
+    trackPageView({
+      path: to.fullPath,
+      title: to.meta.title as string || to.name as string
+    });
   });
-});
-await authService.init(); // Esperar inicialización completa antes de continuar
 
-// Montar app
-app.mount('#app');
+  // Montar
+  app.mount('#app');
+}
+
+bootstrap(); // 👈 Esto sí se puede hacer en cualquier entorno
