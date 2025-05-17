@@ -357,29 +357,6 @@ const postAnalytics = ref<any[]>([
   { title: "Cómo Crear un Plan de Negocios Efectivo", views: 132 }
 ]);
 
-// Verificar autenticación antes de montar el componente
-onBeforeMount(async () => {
-  console.log("Admin component - verificando autenticación");
-  try {
-    // Inicializar Auth0
-    await authService.init();
-
-    // Verificar si el usuario está autenticado
-    const isAuthenticated = await authService.isAuthenticated();
-
-    if (!isAuthenticated) {
-      console.log("Usuario no autenticado, redirigiendo a login");
-      await authService.login();
-      return;
-    }
-
-    console.log("Usuario autenticado, cargando componente Admin");
-  } catch (error) {
-    console.error("Error en la verificación de autenticación:", error);
-    authError.value = "Error al verificar la autenticación. Por favor, intenta de nuevo.";
-  }
-});
-
 onMounted(async () => {
   console.log("Admin component mounted");
 
