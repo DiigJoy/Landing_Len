@@ -1,61 +1,35 @@
 // src/services/auth-service.ts
-// Servicio de autenticación con Auth0
+// Servicio simplificado de autenticación con Auth0
 
 // Configuración de Auth0
-// Obtener valores de las variables de entorno
 const domain = import.meta.env.VITE_AUTH0_DOMAIN;
 const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
 const redirectUri = `${window.location.origin}/admin`;
 
+// Lista de emails autorizados para acceder al panel de administración
+const AUTHORIZED_EMAILS = [
+  'jlbarriossouza@gmail.com',
+  // Añade aquí más emails autorizados si es necesario
+];
+
 // Verificar que las variables de entorno estén definidas
 if (!domain || !clientId) {
-  console.error('Error: Variables de entorno de Auth0 no definidas. Asegúrate de configurar VITE_AUTH0_DOMAIN y VITE_AUTH0_CLIENT_ID en el archivo .env');
+  console.error('Error: Variables de entorno de Auth0 no definidas');
 }
 
-// Función para generar un estado aleatorio
-const generateRandomState = (): string => {
+// Función para generar un string aleatorio para state
+const generateRandomString = (): string => {
   const array = new Uint8Array(16);
   window.crypto.getRandomValues(array);
   return Array.from(array, byte => ('0' + (byte & 0xFF).toString(16)).slice(-2)).join('');
 };
 
-// Guardar el estado en localStorage para verificarlo después
-const saveAuthState = (state: string): void => {
-  localStorage.setItem('auth_state', state);
-  localStorage.setItem('auth_state_timestamp', Date.now().toString());
-};
-
-// Verificar el estado recibido
-const verifyAuthState = (receivedState: string): boolean => {
-  const savedState = localStorage.getItem('auth_state');
-  const timestamp = localStorage.getItem('auth_state_timestamp');
-
-  // Limpiar el estado guardado
-  localStorage.removeItem('auth_state');
-  localStorage.removeItem('auth_state_timestamp');
-
-  // Verificar que el estado no haya expirado (10 minutos)
-  if (timestamp && (Date.now() - parseInt(timestamp)) > 10 * 60 * 1000) {
-    console.error('Estado de autenticación expirado');
-    return false;
-  }
-
-  return savedState === receivedState;
-};
-
 export const authService = {
-  // Inicializar Auth0
+  // Inicializar Auth0 - Procesar callback
   async init(): Promise<void> {
+    let loadingStore;
     try {
-      // Inicializando Auth0
-
-      // Verificar si hay un código de autorización en la URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      const state = urlParams.get('state');
-
-      // Importar el store de carga para poder ocultar la pantalla si es necesario
-      let loadingStore;
+      // Importar el store de carga
       try {
         const { useLoadingStore } = await import('../stores/loadingStore');
         loadingStore = useLoadingStore();
@@ -63,17 +37,21 @@ export const authService = {
         console.error('Error al importar loadingStore:', e);
       }
 
-      if (code && state) {
-        // Código de autorización detectado, procesando callback
+      // Verificar si hay un código de autorización en la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
 
-        // Mostrar pantalla de carga durante el procesamiento del callback
+      if (code && state) {
+        // Mostrar pantalla de carga
         if (loadingStore) {
           loadingStore.showLoading('Completando inicio de sesión...');
         }
 
-        // Verificar el estado
-        if (!verifyAuthState(state)) {
-          console.error('Error: Estado de autenticación inválido');
+        // Verificar el state
+        const savedState = localStorage.getItem('auth_state');
+        if (state !== savedState) {
+          console.error('Estado de autenticación inválido');
           window.history.replaceState({}, document.title, window.location.pathname);
 
           // Ocultar pantalla de carga
@@ -83,21 +61,58 @@ export const authService = {
           return;
         }
 
-        // Intercambiar el código por un token (esto normalmente se haría en el backend)
-        // En este caso, simplemente marcamos al usuario como autenticado
-        localStorage.setItem('auth_is_authenticated', 'true');
-        localStorage.setItem('auth_timestamp', Date.now().toString());
+        // Limpiar el state
+        localStorage.removeItem('auth_state');
 
-        // Limpiar URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-        // Autenticación completada correctamente
+        try {
+          // Intercambiar el código por tokens
+          const tokenResponse = await this.getTokens(code);
 
-        // Ocultar pantalla de carga después de un breve retraso
-        setTimeout(() => {
+          // Guardar token de acceso
+          localStorage.setItem('auth_access_token', tokenResponse.access_token);
+          localStorage.setItem('auth_expires_at', (Date.now() + tokenResponse.expires_in * 1000).toString());
+          localStorage.setItem('auth_is_authenticated', 'true');
+
+          // Obtener información del usuario
+          const userProfile = await this.getUserInfo(tokenResponse.access_token);
+
+          // Verificar si el usuario está autorizado
+          if (!AUTHORIZED_EMAILS.includes(userProfile.email)) {
+            // Si no está autorizado, cerrar sesión
+            await this.logout();
+
+            // Ocultar pantalla de carga
+            if (loadingStore) {
+              loadingStore.hideLoading();
+            }
+
+            alert('No tienes autorización para acceder al panel de administración.');
+            window.location.href = '/';
+            return;
+          }
+
+          // Guardar información del usuario
+          localStorage.setItem('auth_user_email', userProfile.email);
+          localStorage.setItem('auth_user_name', userProfile.name || '');
+
+          // Limpiar URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          // Ocultar pantalla de carga después de un breve retraso
+          setTimeout(() => {
+            if (loadingStore) {
+              loadingStore.hideLoading();
+            }
+          }, 500);
+        } catch (error) {
+          console.error('Error al procesar autenticación:', error);
+          localStorage.removeItem('auth_is_authenticated');
+
+          // Ocultar pantalla de carga
           if (loadingStore) {
             loadingStore.hideLoading();
           }
-        }, 500);
+        }
       } else {
         // Si no hay código de autorización, asegurarse de que la pantalla de carga esté oculta
         if (loadingStore) {
@@ -106,34 +121,68 @@ export const authService = {
       }
     } catch (error) {
       console.error("Error al inicializar Auth0:", error);
-
-      // Intentar limpiar el estado para evitar bucles
       window.history.replaceState({}, document.title, window.location.pathname);
 
       // Ocultar pantalla de carga en caso de error
-      try {
-        const { useLoadingStore } = await import('../stores/loadingStore');
-        useLoadingStore().hideLoading();
-      } catch (e) {
-        console.error('Error al ocultar pantalla de carga:', e);
+      if (loadingStore) {
+        loadingStore.hideLoading();
       }
     }
   },
 
+  // Obtener tokens usando el código de autorización
+  async getTokens(code: string): Promise<any> {
+    const response = await fetch(`https://${domain}/oauth/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        code: code,
+        redirect_uri: redirectUri
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener tokens');
+    }
+
+    return await response.json();
+  },
+
+  // Obtener información del usuario
+  async getUserInfo(accessToken: string): Promise<any> {
+    const response = await fetch(`https://${domain}/userinfo`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener información del usuario');
+    }
+
+    return await response.json();
+  },
+
   // Iniciar sesión
   async login(): Promise<void> {
-    // Iniciando login con Auth0
+    let loadingStore;
     try {
-      // Importar el store de carga dinámicamente para evitar dependencias circulares
-      const { useLoadingStore } = await import('../stores/loadingStore');
-      const loadingStore = useLoadingStore();
+      // Importar el store de carga
+      try {
+        const { useLoadingStore } = await import('../stores/loadingStore');
+        loadingStore = useLoadingStore();
+      } catch (e) {
+        console.error('Error al importar loadingStore:', e);
+      }
 
       // Mostrar pantalla de carga
-      loadingStore.showLoading('Redirigiendo a la página de inicio de sesión...');
+      if (loadingStore) {
+        loadingStore.showLoading('Redirigiendo a la página de inicio de sesión...');
+      }
 
-      // Generar y guardar estado
-      const state = generateRandomState();
-      saveAuthState(state);
+      // Generar y guardar state
+      const state = generateRandomString();
+      localStorage.setItem('auth_state', state);
 
       // Construir URL de autenticación
       const authUrl = new URL(`https://${domain}/authorize`);
@@ -143,22 +192,17 @@ export const authService = {
       authUrl.searchParams.append('scope', 'openid profile email');
       authUrl.searchParams.append('state', state);
 
-      // URL de autenticación generada
-
       // Pequeño retraso para asegurar que la pantalla de carga se muestre
       setTimeout(() => {
-        // Redirigir a la URL de autenticación
+        // Redirigir a Auth0
         window.location.href = authUrl.toString();
       }, 500);
     } catch (error) {
       console.error('Error en login:', error);
 
-      // Ocultar pantalla de carga en caso de error
-      try {
-        const { useLoadingStore } = await import('../stores/loadingStore');
-        useLoadingStore().hideLoading();
-      } catch (e) {
-        console.error('Error al ocultar pantalla de carga:', e);
+      // Ocultar pantalla de carga
+      if (loadingStore) {
+        loadingStore.hideLoading();
       }
 
       alert('Error al iniciar sesión. Por favor, intenta de nuevo.');
@@ -169,20 +213,18 @@ export const authService = {
   async isAuthenticated(): Promise<boolean> {
     try {
       const isAuthenticated = localStorage.getItem('auth_is_authenticated') === 'true';
-      const timestamp = localStorage.getItem('auth_timestamp');
+      const expiresAt = localStorage.getItem('auth_expires_at');
 
-      // Verificar si la autenticación ha expirado (1 hora)
-      if (isAuthenticated && timestamp) {
-        const expirationTime = parseInt(timestamp) + (60 * 60 * 1000); // 1 hora
+      // Verificar si la autenticación ha expirado
+      if (isAuthenticated && expiresAt) {
+        const expirationTime = parseInt(expiresAt);
         if (Date.now() > expirationTime) {
-          console.log('Sesión expirada');
-          localStorage.removeItem('auth_is_authenticated');
-          localStorage.removeItem('auth_timestamp');
+          // Sesión expirada, limpiar datos
+          this.clearAuthData();
           return false;
         }
       }
 
-      // Verificación de autenticación completada
       return isAuthenticated;
     } catch (error) {
       console.error('Error al verificar autenticación:', error);
@@ -190,20 +232,36 @@ export const authService = {
     }
   },
 
-  // Obtener el perfil del usuario (simulado)
+  // Limpiar datos de autenticación
+  clearAuthData(): void {
+    localStorage.removeItem('auth_access_token');
+    localStorage.removeItem('auth_expires_at');
+    localStorage.removeItem('auth_is_authenticated');
+    localStorage.removeItem('auth_user_email');
+    localStorage.removeItem('auth_user_name');
+    localStorage.removeItem('auth_state');
+  },
+
+  // Obtener el perfil del usuario
   async getUser(): Promise<any> {
     try {
       const isAuth = await this.isAuthenticated();
 
       if (!isAuth) {
-        // Usuario no autenticado, no se puede obtener perfil
         return null;
       }
 
-      // Simulamos un usuario
+      // Obtener datos del usuario desde localStorage
+      const email = localStorage.getItem('auth_user_email');
+      const name = localStorage.getItem('auth_user_name');
+
+      if (!email) {
+        return null;
+      }
+
       return {
-        name: 'Usuario de Prueba',
-        email: 'jlbarriossouza@gmail.com'
+        name: name || email.split('@')[0],
+        email: email
       };
     } catch (error) {
       console.error('Error al obtener usuario:', error);
@@ -215,8 +273,7 @@ export const authService = {
   async logout(): Promise<void> {
     try {
       // Limpiar estado de autenticación local
-      localStorage.removeItem('auth_is_authenticated');
-      localStorage.removeItem('auth_timestamp');
+      this.clearAuthData();
 
       // Construir URL de logout
       const logoutUrl = new URL(`https://${domain}/v2/logout`);
@@ -227,7 +284,6 @@ export const authService = {
       window.location.href = logoutUrl.toString();
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
-      // Redirección manual en caso de error
       window.location.href = '/';
     }
   }
